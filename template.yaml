@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.8
+
+  Notify AWS billing to Discord
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 10
+
+Resources:
+  # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+  # https://docs.aws.amazon.com/ja_jp/step-functions/latest/dg/tutorial-lambda-state-machine-cloudformation.html
+  BillingIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "NotifyDiscordToBillingLambdaPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "ce:GetCostAndUsage"
+                  - "ssm:GetParameter"
+                Resource: "*"
+  BllingDiscordFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./src
+      DockerTag: python3.8-v1
+    Properties:
+      PackageType: Zip
+      CodeUri: src/
+      Handler: app.lambda_function.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt BillingIamRole.Arn
+      Events:
+        NotifyDiscord:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 0 * * ? *) # 日本時間AM9時に毎日通知する
+
+Outputs:
+  BllingDiscordFunction:
+    Description: "BillingDiscord Lambda Function ARN"
+    Value: !GetAtt BllingDiscordFunction.Arn
+  BllingDiscordFunctionIamRole:
+    Description: "Implicit IAM Role created for BillingDiscord function"
+    Value: !GetAtt BillingIamRole.Arn
