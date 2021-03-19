@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "aws-billing-discord"
+version = "0.1.0"
+description = "Notify AWS billing to Discord"
+authors = ["mi-24v <miwpayou0808@gmail.com>"]
+license = "WTFPL"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+boto3 = "^1.17.32"
+rope = "^0.18.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
