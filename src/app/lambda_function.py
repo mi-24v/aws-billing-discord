@@ -1,12 +1,12 @@
-import os
 import boto3
 import json
 import requests
 from datetime import datetime, timedelta
 from typing import List, Tuple
 from .utils import get_total_cost_date_range
+from .ssmstore import fetch_ssm_parm
 
-DISCORD_WEBHOOK_URL = os.environ['DISCORD_WEBHOOK_URL']
+DISCORD_WEBHOOK_URL = fetch_ssm_parm('billing-discord_webhookurl')
 
 def lambda_handler(event, context) -> None:
 
@@ -82,7 +82,7 @@ def generate_message(total_billing: dict, service_billings: list) -> Tuple[str, 
 
     total = round(float(total_billing['billing']), 2)
 
-    title = f'{start} - {end_yesterday}{total:.2f} USD :money_with_wings:'
+    title = f'[{start} - {end_yesterday}]{total:.2f} USD :money_with_wings:'
 
     details :List[str] = []
     for item in service_billings:
@@ -104,15 +104,16 @@ def post_discord(summary: str, detail: str) -> None:
         'content' : summary,
         'embeds': [
             {
-                'color': '#36a64f',
+                'color': 3581519, #'#36a64f'の10進変換
                 'description': detail
             }
         ]
     }
 
+    header = { 'Content-Type' : "application/json" }
     # http://requests-docs-ja.readthedocs.io/en/latest/user/quickstart/
     try:
-        response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(payload))
+        response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(payload), headers=header)
     except requests.exceptions.RequestException as e:
         print(e)
     else:
