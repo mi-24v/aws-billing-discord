@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "aws-billing-discord"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1dgjgbhxxvt7d"
+s3_prefix = "aws-billing-discord"
+region = "ap-northeast-3"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
