@@ -94,6 +94,9 @@ def generate_message(total_billing: dict, service_billings: list) -> Tuple[str, 
             continue
         details.append(f' - {service_name}: {billing:.2f} USD')
 
+    if len(details) == 0:
+        details.append("There is nothing to bill.")
+
     return title, '\n'.join(details)
 
 
@@ -114,6 +117,7 @@ def post_discord(summary: str, detail: str) -> None:
     # http://requests-docs-ja.readthedocs.io/en/latest/user/quickstart/
     try:
         response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(payload), headers=header)
+        response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(e)
     else:
